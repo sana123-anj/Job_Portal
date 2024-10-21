@@ -103,28 +103,22 @@ export const editSingleJobAction = (job) => async (dispatch) => {
 
 // register job action
 
-export const registerAjobAction = (jobData) => async (dispatch) => {
+export const registerAjobAction = (job) => async (dispatch) => {
+    dispatch({ type: REGISTER_JOB_REQUEST })
+
     try {
-        const config = {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        };
-
-        const { data } = await axios.post('/api/jobs/create', jobData, config);
-
-        // Dispatch success action
+        const { data } = await axios.post("/api/jobs/create", job)
         dispatch({
-            type: JOB_CREATE_SUCCESS,
-            payload: data,
-        });
+            type: REGISTER_JOB_SUCCESS,
+            payload: data
+        })
+        toast.success("Job created successfully");
+
     } catch (error) {
-        // Dispatch failure action
         dispatch({
-            type: JOB_CREATE_FAIL,
-            payload: error.response && error.response.data.message
-                ? error.response.data.message
-                : error.message,
-        });
+            type: REGISTER_JOB_FAIL,
+            payload: error.response.data.error
+        })
+        toast.error(error.response.data.error);
     }
-};
+}

@@ -1,61 +1,56 @@
-import React, { useEffect, useState } from 'react';
-import {
-    Box, Button, Paper, Typography, Dialog, DialogActions, DialogContent,
-    DialogContentText, DialogTitle, Snackbar, Alert, CircularProgress
-} from '@mui/material';
-import { DataGrid, gridClasses, GridToolbar } from '@mui/x-data-grid';
+import React, { useEffect } from 'react';
+import { Box, Button, Paper, Typography, CircularProgress } from '@mui/material';
+import { DataGrid, gridClasses } from '@mui/x-data-grid';
 import { Link } from 'react-router-dom';
+import AddIcon from '@mui/icons-material/Add';
 import { useDispatch, useSelector } from 'react-redux';
-import { jobLoadAction, deleteSingleJobAction } from '../../redux/actions/jobactions';
+import { jobLoadAction } from '../../redux/actions/jobactions';
 
 const DashJobs = () => {
     const dispatch = useDispatch();
 
-    const [open, setOpen] = useState(false);  // Dialog state
-    const [selectedJobId, setSelectedJobId] = useState(null);  // ID of the job to delete
-    const [snackbarOpen, setSnackbarOpen] = useState(false);  // Snackbar state
-
     useEffect(() => {
-        dispatch(jobLoadAction());  // Load all jobs
+        dispatch(jobLoadAction());
     }, [dispatch]);
 
-    const { jobs = [], loading, error } = useSelector(state => state.loadJobs || {});
+    // Safely destructure the Redux state
+    const { jobs = [], loading = true, error } = useSelector(state => state.loadJobs || {});
 
-    const handleClickOpen = (id) => {
-        console.log('Opening delete confirmation for job with ID:', id);
-        setSelectedJobId(id);
-        setOpen(true);
-        console.log('Dialog open state:', open);  // Check if state is being set
-    };
-    
-    const handleDeleteJob = (id) => {
+    // Log the jobs data to check its structure
+    console.log("Jobs data:", jobs); // Log the jobs data
+
+    // Handle delete job by ID (placeholder logic)
+    const deleteJobById = (e, id) => {
         console.log('Deleting job with ID:', id);
-        dispatch(deleteSingleJobAction(id))
-            .then(() => {
-                console.log('Job deleted successfully');
-                setSnackbarOpen(true); // Show success notification
-                dispatch(jobLoadAction()); // Refresh job list
-            })
-            .catch((error) => {
-                console.error('Error deleting job:', error); // Log errors
-            });
+        // Implement delete logic here
     };
+
     // Define columns for DataGrid
     const columns = [
-        { field: '_id', headerName: 'Job ID', width: 150 },
+        { field: '_id', headerName: 'Job ID', width: 150, editable: true },
         { field: 'Title', headerName: 'Job Name', width: 150 },
         {
             field: 'Jobtype',
             headerName: 'Category',
             width: 150,
             renderCell: (params) => (params.row.Jobtype.JobTypeName)
+                //const jobTypeMap = {
+                   // "66fa3d157ff7b205c8259977": "Full-Time", // Add other mappings as needed
+               // };
+               // return jobTypeMap[params.row.Jobtype] || 'Unknown';
+          //  },
         },
-        {
-            field: 'Firstname',
-            headerName: 'First Name',
-            renderCell: (params) => params.row ? params.row.Firstname : 'N/A'
-        },
-        {
+        
+            {
+                field: 'Firstname',
+                headerName: 'First Name',
+                renderCell: (params) => {
+                    return params.row ? params.row.Firstname : 'N/A'; // Fallback to 'N/A' if row is null
+                },
+                // Other column properties
+            },
+            // Other columns
+    {
             field: 'available',
             headerName: 'Available',
             width: 150,
@@ -78,7 +73,7 @@ const DashJobs = () => {
                             Edit
                         </Link>
                     </Button>
-                    <Button onClick={() => handleDeleteJob(params.row.id)} variant="contained" color="error">
+                    <Button onClick={(e) => deleteJobById(e, params.row._id)} variant="contained" color="error">
                         Delete
                     </Button>
                 </Box>
@@ -86,6 +81,7 @@ const DashJobs = () => {
         },
     ];
 
+    // Display loading or error state
     if (loading) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -132,7 +128,7 @@ const DashJobs = () => {
                             },
                             color: 'black',
                             [`& .${gridClasses.row}`]: {
-                                bgcolor: 'blue',
+                                bgcolor: 'blue', // Set the default row color to blue
                             },
                         }}
                         rows={jobs}
@@ -140,41 +136,9 @@ const DashJobs = () => {
                         pageSize={5}
                         rowsPerPageOptions={[5]}
                         checkboxSelection
-                        components={{ Toolbar: GridToolbar }}
                     />
                 </Box>
             </Paper>
-
-            {/* Confirmation dialog for delete action */}
-            <Dialog
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description"
-            >
-                <DialogTitle id="alert-dialog-title">{"Delete Job"}</DialogTitle>
-                <DialogContent>
-                    <DialogContentText id="alert-dialog-description">
-                        Are you sure you want to delete this job? This action cannot be undone.
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose} color="primary">Cancel</Button>
-                    <Button onClick={handleDeleteConfirmed} color="error" autoFocus>Confirm</Button>
-                </DialogActions>
-            </Dialog>
-
-            {/* Snackbar for showing success message */}
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={3000}
-                onClose={handleSnackbarClose}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            >
-                <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
-                    Job deleted successfully!
-                </Alert>
-            </Snackbar>
         </Box>
     );
 };

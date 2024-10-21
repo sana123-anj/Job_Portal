@@ -57,7 +57,7 @@ const DashEditJob = () => {
         initialValues: {
             _id: singleJob?._id,
             title: singleJob?.Title,
-            description: singleJob?.description,
+            description: singleJob?.Description,
             salary: singleJob?.Salary,
             location: singleJob?.location,
             available: singleJob?.available,
